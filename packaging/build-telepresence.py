@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/export/apps/python/3.7.0/bin/python3
 """
 Create a standalone telepresence
 """
@@ -30,7 +30,7 @@ def make_compressed_zipapp(source: Path, output: Path, main_function: str):
     compressed.seek(0, 0)
 
     # Build final zip file
-    create_archive(compressed, str(output), interpreter="/usr/bin/env python3")
+    create_archive(compressed, str(output), interpreter="/export/apps/python/3.7.0/bin/python3")
     output.chmod(0o755)  # Seems to default to 744 on CircleCI
 
 
@@ -41,7 +41,7 @@ def build_telepresence(project: Path, output: Path):
     with TemporaryDirectory() as temp:
         # Run setup.py build to extract source code. Versioneer will replace
         # _version.py with hard-coded version info.
-        check_output(["python3", "-Wignore", "setup.py", "build", "-b", temp],
+        check_output(["/export/apps/python/3.7.0/bin/python3", "-Wignore", "setup.py", "build", "-b", temp],
                      cwd=str(project))
         # Build zip app
         make_compressed_zipapp(
@@ -61,7 +61,7 @@ def main():
         output = Path(sys.argv[1])
     else:
         version_bytes = check_output(
-            ["python3", "-Wignore", "setup.py", "--version"],
+            ["/export/apps/python/3.7.0/bin/python3", "-Wignore", "setup.py", "--version"],
             cwd=str(project),
         )
         version = str(version_bytes, "utf-8").strip()

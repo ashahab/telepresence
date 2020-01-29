@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/export/apps/python/3.7.0/bin/python3
 """
 Create a standalone sshuttle.
 
@@ -30,9 +30,9 @@ def build_sshuttle(output: Path):
             str(code)
         ])
         check_call(["git", "checkout", "-q", "telepresence"], cwd=str(code))
-        check_call(["python3", "setup.py", "-q", "sdist"], cwd=str(code))
+        check_call(["/export/apps/python/3.7.0/bin/python3", "setup.py", "-q", "sdist"], cwd=str(code))
         version = str(
-            check_output(["python3", "setup.py", "--version"],
+            check_output(["/export/apps/python/3.7.0/bin/python3", "setup.py", "--version"],
                          cwd=str(code)).strip(), "ascii"
         )
         tarball = code / "dist" / "sshuttle-telepresence-{}.tar.gz".format(
@@ -41,7 +41,7 @@ def build_sshuttle(output: Path):
         assert tarball.exists(), str(tarball)
 
         # Set up Pex in a one-off virtualenv
-        check_call(["python3", "-m", "venv", str(build / "venv")])
+        check_call(["/export/apps/python/3.7.0/bin/python3", "-m", "venv", str(build / "venv")])
         check_call([str(build / "venv/bin/pip"), "-q", "install", "pex"])
 
         # Use Pex to build the executable

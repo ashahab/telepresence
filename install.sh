@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -x
 
 # Install Telepresence binaries in ${PREFIX}/bin and ${PREFIX}/libexec.
 
@@ -6,7 +6,7 @@ set -o errexit
 set -o pipefail
 set -o nounset
 # set -o xtrace
-
+PREFIX=/usr/local
 echo "Installing Telepresence in ${PREFIX}"
 
 SRCDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
