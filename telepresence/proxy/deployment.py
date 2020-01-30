@@ -44,6 +44,7 @@ def existing_deployment(
     deployment_arg: str,
     expose: PortMapping,
     custom_nameserver: Optional[str],
+    crd_type: Optional[str],
     service_account: str,
 ) -> Tuple[str, Optional[str]]:
     """
@@ -70,6 +71,7 @@ def existing_deployment_openshift(
     deployment_arg: str,
     expose: PortMapping,
     custom_nameserver: Optional[str],
+    crd_type: Optional[str],
     service_account: str,
 ) -> Tuple[str, Optional[str]]:
     """
@@ -100,6 +102,7 @@ def create_new_deployment(
     deployment_arg: str,
     expose: PortMapping,
     custom_nameserver: Optional[str],
+    crd_type: Optional[str],
     service_account: str,
 ) -> Tuple[str, str]:
     """
@@ -351,6 +354,7 @@ def swap_deployment_openshift(
     deployment_arg: str,
     expose: PortMapping,
     custom_nameserver: Optional[str],
+    crd_type: Optional[str],
     service_account: str,
 ) -> Tuple[str, str]:
     """

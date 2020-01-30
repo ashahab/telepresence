@@ -128,7 +128,7 @@ def setup(runner: Runner, args):
                     )
                 )
         tel_deployment, run_id = operation(
-            runner_, deployment_arg, args.expose, custom_nameserver,
+            runner_, deployment_arg, args.expose, custom_nameserver, args.crd_type,
             args.service_account
         )
         remote_info = get_remote_info(

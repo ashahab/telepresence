@@ -280,6 +280,13 @@ def parse_args(in_args: Optional[List[str]] = None) -> argparse.Namespace:
         )
     )
     parser.add_argument(
+        "--crd-type",
+        default="tfjob",
+        help=(
+            "The Kubernetes crd to use. Defaults to tfjob."
+        )
+    )
+    parser.add_argument(
         "--serviceaccount",
         dest="service_account",
         default=None,
