@@ -284,7 +284,7 @@ def new_swapped_deployment(
     replicas_json['replicas'] = 1
     new_deployment_json["metadata"].setdefault("labels",
                                                {})["telepresence"] = run_id
-    spec_template = parse('spec..template')
+    spec_template = parse('spec..template.metadata')
     ndj_template = jsonPath_dot_to_dict(spec_template,
                                         new_deployment_json)
     #ndj_template = [match.value for match in spec_template.find(new_deployment_json)][0]
@@ -298,8 +298,8 @@ def new_swapped_deployment(
     new_containers = jsonPath_dot_to_dict(spec_containers,
                                           new_deployment_json)
     for container, old_container in zip(
-        new_containers,
-        old_containers,
+        new_containers['containers'],
+        old_containers['containers'],
     ):
         if container["name"] == container_to_update:
             # Merge container ports into the expose list
