@@ -219,6 +219,7 @@ def supplant_deployment(
         service_account,
         custom_nameserver,
     )
+    runner.show(f"modified json {json.dumps(new_deployment_json, indent=2)}")
 
     # Launch the new deployment
     # runner.add_cleanup("Delete new deployment", delete_new_deployment, True)
@@ -297,6 +298,7 @@ def new_swapped_deployment(
                                           old_deployment)
     new_containers = jsonPath_dot_to_dict(spec_containers,
                                           new_deployment_json)
+    import pdb; pdb.set_trace()
     for container, old_container in zip(
         new_containers['containers'],
         old_containers['containers'],
