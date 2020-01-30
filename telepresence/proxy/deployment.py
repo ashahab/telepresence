@@ -245,7 +245,7 @@ def jsonPath_dot_to_dict(js_expr, map):
     :param map:
     :return:
     """
-    path = [match.full_path for match in js_expr.find(map)][0]
+    path = [str(match.full_path) for match in js_expr.find(map)][0]
     keys_except_last = path.split('.')[:-1]
     for key in keys_except_last:
         map = map[key]
