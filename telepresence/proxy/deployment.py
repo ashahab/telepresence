@@ -298,7 +298,6 @@ def new_swapped_deployment(
                                           old_deployment)
     new_containers = jsonPath_dot_to_dict(spec_containers,
                                           new_deployment_json)
-    import pdb; pdb.set_trace()
     for container, old_container in zip(
         new_containers['containers'],
         old_containers['containers'],
