@@ -23,7 +23,7 @@ from telepresence import (
 )
 from telepresence.cli import PortMapping
 from telepresence.runner import Runner
-
+from jsonpath_rw import jsonpath, parse
 from .remote import get_deployment_json
 
 
@@ -217,31 +217,6 @@ def supplant_deployment(
         custom_nameserver,
     )
 
-    def resize_original(replicas):
-        """Resize the original deployment (kubectl scale)"""
-        runner.check_call(
-            runner.kubectl(
-                "scale", "deployment", deployment,
-                "--replicas={}".format(replicas)
-            )
-        )
-
-    def delete_new_deployment(check):
-        """Delete the new (copied) deployment"""
-        ignore = []
-        if not check:
-            ignore = ["--ignore-not-found"]
-        else:
-            runner.show(
-                "Swapping Deployment {} back to its original state".
-                format(deployment_arg)
-            )
-        runner.check_call(
-            runner.kubectl(
-                "delete", crd_type or "deployment", deployment, *ignore
-            )
-        )
-
     # Launch the new deployment
     # runner.add_cleanup("Delete new deployment", delete_new_deployment, True)
     # delete_new_deployment(False)  # Just in case
@@ -260,6 +235,18 @@ def supplant_deployment(
     span.end()
     return deployment, run_id
 
+def jsonPath_dot_to_dict(js_expr, map):
+    """Returns reference to the map at the end of the path
+
+    :param path:
+    :param map:
+    :return:
+    """
+    path = [match.full_path for match in js_expr.find(map)][0]
+    keys_except_last = path.split('.')[:-1]
+    for key in keys_except_last:
+        map = map[key]
+    return map
 
 def new_swapped_deployment(
     runner: Runner,
@@ -289,19 +276,27 @@ def new_swapped_deployment(
     """
     new_deployment_json = deepcopy(old_deployment)
     # find the path to spec..replicas
-    new_deployment_json["spec"]["replicas"] = 1
+    spec_replicas = parse('spec..replicas')
+    replicas_json = jsonPath_dot_to_dict(spec_replicas, new_deployment_json)
+    replicas_json['replicas'] = 1
     new_deployment_json["metadata"].setdefault("labels",
                                                {})["telepresence"] = run_id
-
-    ndj_template = new_deployment_json["spec"]["template"]
+    spec_template = parse('spec..template')
+    ndj_template = jsonPath_dot_to_dict(spec_template,
+                                        new_deployment_json)
+    #ndj_template = [match.value for match in spec_template.find(new_deployment_json)][0]
+    #ndj_template = new_deployment_json["spec"]["template"]
     # find the path to template.metadata
     ndj_template["metadata"].setdefault("labels", {})["telepresence"] = run_id
-    if service_account:
-        ndj_template["spec"]["serviceAccountName"] = service_account
     # zip ..spec.containers in new and old
+    spec_containers = parse('spec..containers')
+    old_containers = jsonPath_dot_to_dict(spec_containers,
+                                          old_deployment)
+    new_containers = jsonPath_dot_to_dict(spec_containers,
+                                          new_deployment_json)
     for container, old_container in zip(
-        ndj_template["spec"]["containers"],
-        old_deployment["spec"]["template"]["spec"]["containers"],
+        new_containers,
+        old_containers,
     ):
         if container["name"] == container_to_update:
             # Merge container ports into the expose list
