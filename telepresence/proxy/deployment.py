@@ -224,7 +224,7 @@ def supplant_deployment(
         expose,
         service_account,
         custom_nameserver,
-        subtype,
+        subtype=subtype,
     )
     runner.show(f"modified json {json.dumps(new_deployment_json, indent=2)}")
 

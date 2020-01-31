@@ -146,6 +146,7 @@ def setup(runner: Runner, args):
             tel_deployment,
             type,
             run_id=run_id,
+            subtype=subtype
         )
         return remote_info
 
