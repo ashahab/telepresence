@@ -120,6 +120,8 @@ def setup(runner: Runner, args):
         return type, subtype
 
     def start_proxy(runner_: Runner) -> RemoteInfo:
+        import pdb; pdb.set_trace()
+        runner.show(f"Starting proxy with deployment_type {deployment_type}")
         if args.service_account:
             try:
                 runner_.check_call(
@@ -133,7 +135,7 @@ def setup(runner: Runner, args):
                         args.service_account, exc.stderr
                     )
                 )
-        import pdb; pdb.set_trace()
+
         tel_deployment, run_id = operation(
             runner_, deployment_arg, args.expose, custom_nameserver, deployment_type,
             args.service_account
