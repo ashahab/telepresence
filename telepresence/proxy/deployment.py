@@ -208,13 +208,14 @@ def supplant_deployment(
     )
 
     deployment, container = _split_deployment_container(deployment_arg)
+    type, subtype = _split_type_subtype(crd_type)
     deployment_json = get_deployment_json(
         runner,
         deployment,
-        crd_type or "deployment",
+        type,
     )
     container = _get_container_name(container, deployment_json)
-    _, subtype = _split_type_subtype(crd_type)
+
     new_deployment_json = new_swapped_deployment(
         runner,
         deployment_json,
