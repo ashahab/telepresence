@@ -15,7 +15,7 @@
 import json
 from subprocess import CalledProcessError
 from typing import Dict, Optional
-
+from jsonpath_rw import jsonpath, parse
 from telepresence import image_version
 from telepresence.runner import Runner
 
@@ -143,7 +143,9 @@ def get_remote_info(
     deployment = get_deployment_json(
         runner, deployment_name, deployment_type, run_id=run_id
     )
-    dst_metadata = deployment["spec"]["template"]["metadata"]
+    # spec..template.metadata
+    spec_metadata = parse('spec..template.metadata')
+    dst_metadata = [match.value for match in spec_metadata.find(deployment)][0]
     expected_labels = dst_metadata.get("labels", {})
 
     runner.write("Searching for Telepresence pod:")

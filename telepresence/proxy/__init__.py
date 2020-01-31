@@ -90,7 +90,7 @@ def setup(runner: Runner, args):
             deployment_type = "deploymentconfig"
         else:
             operation = supplant_deployment
-            deployment_type = "deployment"
+            deployment_type = args.crd_type or "deployment"
         args.operation = "swap_deployment"
 
     # minikube/minishift break DNS because DNS gets captured, sent to minikube,
