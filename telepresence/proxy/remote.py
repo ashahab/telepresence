@@ -130,6 +130,7 @@ def get_remote_info(
     runner: Runner,
     deployment_name: str,
     deployment_type: str,
+    subtype: Optional[str] = None,
     run_id: Optional[str] = None,
 ) -> RemoteInfo:
     """
@@ -144,7 +145,10 @@ def get_remote_info(
         runner, deployment_name, deployment_type, run_id=run_id
     )
     # spec..template.metadata
-    spec_metadata = parse('spec..template.metadata')
+    if subtype is not None:
+        spec_metadata = parse(f'spec..{subtype}..template.metadata')
+    else:
+        spec_metadata = parse('spec..template.metadata')
     dst_metadata = [match.value for match in spec_metadata.find(deployment)][0]
     expected_labels = dst_metadata.get("labels", {})
 

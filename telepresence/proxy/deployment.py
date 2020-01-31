@@ -169,6 +169,11 @@ def _split_deployment_container(deployment_arg):
         container = container[0]
     return deployment, container
 
+def _split_type_subtype(type_arg):
+    type, *subtype = type_arg.split(":", 1)
+    if subtype:
+        subtype = subtype[0]
+    return type, subtype
 
 def _get_container_name(container, deployment_json):
     # If no container name was given, just use the first one:
@@ -209,7 +214,7 @@ def supplant_deployment(
         crd_type or "deployment",
     )
     container = _get_container_name(container, deployment_json)
-
+    _, subtype = _split_type_subtype(crd_type)
     new_deployment_json = new_swapped_deployment(
         runner,
         deployment_json,
@@ -218,6 +223,7 @@ def supplant_deployment(
         expose,
         service_account,
         custom_nameserver,
+        subtype,
     )
     runner.show(f"modified json {json.dumps(new_deployment_json, indent=2)}")
 
@@ -260,6 +266,7 @@ def new_swapped_deployment(
     expose: PortMapping,
     service_account: str,
     custom_nameserver: Optional[str],
+    subtype: Optional[str],
 ) -> Dict:
     """
     Create a new Deployment that uses telepresence-k8s image.
@@ -279,13 +286,20 @@ def new_swapped_deployment(
     Mutates the passed-in PortMapping to include container ports.
     """
     new_deployment_json = deepcopy(old_deployment)
+
     # find the path to spec..replicas
-    spec_replicas = parse('spec..replicas')
+    if subtype is not None:
+        spec_replicas = parse(f'spec..{subtype}..replicas')
+    else:
+        spec_replicas = parse('spec..replicas')
     replicas_json = jsonPath_dot_to_dict(spec_replicas, new_deployment_json)
     replicas_json['replicas'] = 1
     new_deployment_json["metadata"].setdefault("labels",
                                                {})["telepresence"] = run_id
-    spec_template = parse('spec..template.metadata')
+    if subtype is not None:
+        spec_template = parse(f'spec..{subtype}..template.metadata')
+    else:
+        spec_template = parse('spec..template.metadata')
     ndj_template = jsonPath_dot_to_dict(spec_template,
                                         new_deployment_json)
     #ndj_template = [match.value for match in spec_template.find(new_deployment_json)][0]

@@ -113,6 +113,12 @@ def setup(runner: Runner, args):
                 "Failed to find a fallback nameserver: {}".format(exc)
             )
 
+    def _split_type_subtype(type_arg):
+        type, *subtype = type_arg.split(":", 1)
+        if subtype:
+            subtype = subtype[0]
+        return type, subtype
+
     def start_proxy(runner_: Runner) -> RemoteInfo:
         if args.service_account:
             try:
@@ -129,13 +135,14 @@ def setup(runner: Runner, args):
                 )
         import pdb; pdb.set_trace()
         tel_deployment, run_id = operation(
-            runner_, deployment_arg, args.expose, custom_nameserver, args.crd_type,
+            runner_, deployment_arg, args.expose, custom_nameserver, deployment_type,
             args.service_account
         )
+        type, subtype = _split_type_subtype(deployment_type)
         remote_info = get_remote_info(
             runner,
             tel_deployment,
-            deployment_type,
+            type,
             run_id=run_id,
         )
         return remote_info
