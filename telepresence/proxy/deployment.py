@@ -308,7 +308,10 @@ def new_swapped_deployment(
     # find the path to template.metadata
     ndj_template["metadata"].setdefault("labels", {})["telepresence"] = run_id
     # zip ..spec.containers in new and old
-    spec_containers = parse('spec..containers')
+    if subtype is not None:
+        spec_containers = parse(f'spec..{subtype}..containers')
+    else:
+        spec_containers = parse('spec..containers')
     old_containers = jsonPath_dot_to_dict(spec_containers,
                                           old_deployment)
     new_containers = jsonPath_dot_to_dict(spec_containers,
