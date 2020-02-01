@@ -232,7 +232,7 @@ def supplant_deployment(
     # runner.add_cleanup("Delete new deployment", delete_new_deployment, True)
     # delete_new_deployment(False)  # Just in case
     runner.check_call(
-        runner.kubectl("apply", "-f", "-"),
+        runner.kubectl("replace", "-f", "-"),
         input=json.dumps(new_deployment_json).encode("utf-8")
     )
 
