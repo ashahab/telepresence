@@ -256,7 +256,7 @@ def parse_args(in_args: Optional[List[str]] = None) -> argparse.Namespace:
     )
     group_deployment.add_argument(
         "--swap-pod",
-        "-s",
+        "-p",
         dest="swap_pod",
         metavar="POD_NAME[:CONTAINER]",
         help=(
