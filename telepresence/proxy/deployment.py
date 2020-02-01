@@ -363,7 +363,7 @@ def _manage_pod(
         ndj_template["spec"]["serviceAccountName"] = service_account
     for container, old_container in zip(
         ndj_template["spec"]["containers"],
-        old_ndj_template["spec"]["template"]["spec"]["containers"],
+        old_ndj_template["spec"]["containers"],
     ):
         if container["name"] == container_to_update:
             # Merge container ports into the expose list
