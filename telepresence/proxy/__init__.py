@@ -83,7 +83,7 @@ def setup(runner: Runner, args):
         args.operation = "new_deployment"
     if args.swap_pod is not None:
         # This implies --swap-deployment
-        deployment_arg = args.swap_deployment
+        deployment_arg = args.swap_pod
         operation = supplant_pod
         deployment_type = "pod"
         args.operation = "swap_pod"

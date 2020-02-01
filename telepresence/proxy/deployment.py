@@ -310,7 +310,9 @@ def supplant_pod(
         custom_nameserver,
     )
 
-
+    runner.show(
+        f"Swapped pod {new_deployment_json}."
+    )
     # Launch the new deployment
     runner.check_call(
         runner.kubectl("apply", "-f", "-"),
