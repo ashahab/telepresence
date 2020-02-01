@@ -143,7 +143,10 @@ def get_remote_info(
     deployment = get_deployment_json(
         runner, deployment_name, deployment_type, run_id=run_id
     )
-    dst_metadata = deployment["spec"]["template"]["metadata"]
+    if deployment_type == "pod":
+        dst_metadata = deployment["metadata"]
+    else:
+        dst_metadata = deployment["spec"]["template"]["metadata"]
     expected_labels = dst_metadata.get("labels", {})
 
     runner.write("Searching for Telepresence pod:")

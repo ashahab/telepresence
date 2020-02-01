@@ -18,7 +18,7 @@ from telepresence.utilities import get_alternate_nameserver
 
 from .deployment import (
     create_new_deployment, existing_deployment, existing_deployment_openshift,
-    supplant_deployment, swap_deployment_openshift
+    supplant_deployment, supplant_pod, swap_deployment_openshift
 )
 from .remote import RemoteInfo, get_remote_info
 
@@ -81,6 +81,12 @@ def setup(runner: Runner, args):
             deployment_type = "deployment"
         operation = create_new_deployment
         args.operation = "new_deployment"
+    if args.swap_pod is not None:
+        # This implies --swap-deployment
+        deployment_arg = args.swap_deployment
+        operation = supplant_pod
+        deployment_type = "pod"
+        args.operation = "swap_pod"
 
     if args.swap_deployment is not None:
         # This implies --swap-deployment

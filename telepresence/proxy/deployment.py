@@ -23,7 +23,7 @@ from telepresence import (
 )
 from telepresence.cli import PortMapping
 from telepresence.runner import Runner
-
+from jsonpath_rw import jsonpath, parse
 from .remote import get_deployment_json
 
 
@@ -205,7 +205,7 @@ def supplant_deployment(
         "deployment",
     )
     container = _get_container_name(container, deployment_json)
-
+    #
     new_deployment_json = new_swapped_deployment(
         runner,
         deployment_json,
@@ -269,44 +269,99 @@ def supplant_deployment(
     span.end()
     return new_deployment_name, run_id
 
-
-def new_swapped_deployment(
+def supplant_pod(
     runner: Runner,
-    old_deployment: Dict,
+    deployment_arg: str,
+    expose: PortMapping,
+    custom_nameserver: Optional[str],
+    service_account: str,
+) -> Tuple[str, str]:
+    """
+    Swap out an existing Deployment, supplant method.
+
+    Native Kubernetes version.
+
+    Returns (Deployment name, unique K8s label, JSON of original container that
+    was swapped out.)
+    """
+    span = runner.span()
+    run_id = runner.session_id
+
+    runner.show(
+        "Starting network proxy to cluster by swapping out "
+        "Deployment {} with a proxy".format(deployment_arg)
+    )
+
+    pod, container = _split_deployment_container(deployment_arg)
+    deployment_json = get_deployment_json(
+        runner,
+        pod,
+        "pod",
+    )
+    container = _get_container_name(container, deployment_json)
+    #
+    new_deployment_json = new_swapped_pod(
+        runner,
+        deployment_json,
+        container,
+        run_id,
+        expose,
+        service_account,
+        custom_nameserver,
+    )
+
+
+    # Launch the new deployment
+    runner.check_call(
+        runner.kubectl("apply", "-f", "-"),
+        input=json.dumps(new_deployment_json).encode("utf-8")
+    )
+
+    span.end()
+    return pod, run_id
+
+def new_swapped_pod(runner: Runner,
+    old_pod: Dict,
     container_to_update: str,
     run_id: str,
     expose: PortMapping,
     service_account: str,
     custom_nameserver: Optional[str],
 ) -> Dict:
-    """
-    Create a new Deployment that uses telepresence-k8s image.
+    new_pod_json = deepcopy(old_pod)
 
-    Makes the following changes:
+    new_pod_json["metadata"].setdefault("labels",{})["telepresence"] = run_id
+    if service_account:
+        new_pod_json["spec"]["serviceAccountName"] = service_account
+    _manage_pod(
+        runner,
+        new_pod_json,
+        old_pod,
+        service_account,
+        run_id,
+        container_to_update,
+        expose,
+        custom_nameserver
+    )
+    return new_pod_json
 
-    1. Changes to single replica.
-    2. Disables command, args, livenessProbe, readinessProbe, workingDir.
-    3. Adds labels.
-    4. Adds TELEPRESENCE_NAMESERVER env variable, if requested.
-    5. Runs as root, if requested.
-    6. Sets terminationMessagePolicy.
-    7. Adds TELEPRESENCE_CONTAINER_NAMESPACE env variable so the forwarder does
-       not have to access the k8s API from within the pod.
+def _manage_pod(
+    runner: Runner,
+    ndj_template: Dict,
+    old_ndj_template: Dict,
+    service_account: str,
+    run_id: str,
+    container_to_update: str,
+    expose: PortMapping,
+    custom_nameserver: Optional[str],
 
-    Returns dictionary that can be encoded to JSON and used with kubectl apply.
-    Mutates the passed-in PortMapping to include container ports.
-    """
-    new_deployment_json = deepcopy(old_deployment)
-    new_deployment_json["spec"]["replicas"] = 1
-    new_deployment_json["metadata"].setdefault("labels",
-                                               {})["telepresence"] = run_id
-    ndj_template = new_deployment_json["spec"]["template"]
+) -> Dict:
     ndj_template["metadata"].setdefault("labels", {})["telepresence"] = run_id
     if service_account:
         ndj_template["spec"]["serviceAccountName"] = service_account
     for container, old_container in zip(
         ndj_template["spec"]["containers"],
-        old_deployment["spec"]["template"]["spec"]["containers"],
+        old_ndj_template["spec"]["template"]["spec"]["containers"],
     ):
         if container["name"] == container_to_update:
             # Merge container ports into the expose list
@@ -348,8 +403,51 @@ def new_swapped_deployment(
                     }
                 }
             })
-            return new_deployment_json
+            break
 
+
+def new_swapped_deployment(
+    runner: Runner,
+    old_deployment: Dict,
+    container_to_update: str,
+    run_id: str,
+    expose: PortMapping,
+    service_account: str,
+    custom_nameserver: Optional[str],
+) -> Dict:
+    """
+    Create a new Deployment that uses telepresence-k8s image.
+
+    Makes the following changes:
+
+    1. Changes to single replica.
+    2. Disables command, args, livenessProbe, readinessProbe, workingDir.
+    3. Adds labels.
+    4. Adds TELEPRESENCE_NAMESERVER env variable, if requested.
+    5. Runs as root, if requested.
+    6. Sets terminationMessagePolicy.
+    7. Adds TELEPRESENCE_CONTAINER_NAMESPACE env variable so the forwarder does
+       not have to access the k8s API from within the pod.
+
+    Returns dictionary that can be encoded to JSON and used with kubectl apply.
+    Mutates the passed-in PortMapping to include container ports.
+    """
+    new_deployment_json = deepcopy(old_deployment)
+    new_deployment_json["spec"]["replicas"] = 1
+    new_deployment_json["metadata"].setdefault("labels",
+                                               {})["telepresence"] = run_id
+    ndj_template = new_deployment_json["spec"]["template"]
+    old_ndj_template = old_deployment["spec"]["template"]
+    _manage_pod(runner,
+        ndj_template,
+        old_ndj_template,
+        service_account,
+        run_id,
+        container_to_update,
+        expose,
+        custom_nameserver
+    )
+    return new_deployment_json
     raise RuntimeError(
         "Couldn't find container {} in the Deployment.".
         format(container_to_update)

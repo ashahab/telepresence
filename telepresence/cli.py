@@ -255,6 +255,18 @@ def parse_args(in_args: Optional[List[str]] = None) -> argparse.Namespace:
         )
     )
     group_deployment.add_argument(
+        "--swap-pod",
+        "-s",
+        dest="swap_pod",
+        metavar="POD_NAME[:CONTAINER]",
+        help=(
+            "Swap out an existing deployment with the Telepresence proxy, "
+            "swap back on exit. If there are multiple containers in the pod "
+            "then add the optional container name to indicate which container"
+            " to use."
+        )
+    )
+    group_deployment.add_argument(
         "--deployment",
         "-d",
         metavar="EXISTING_DEPLOYMENT_NAME",

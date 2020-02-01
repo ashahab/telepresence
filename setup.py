@@ -17,5 +17,8 @@ setup(
             "telepresence = telepresence.main:run_telepresence"
         ]
     },
+    install_requires=[
+          'jsonpath-rw',
+      ],
     url="https://www.telepresence.io"
 )
