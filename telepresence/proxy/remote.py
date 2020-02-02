@@ -38,11 +38,15 @@ class RemoteInfo(object):
         deployment_name: str,
         pod_name: str,
         deployment_config: dict,
+        pod_config: dict,
     ) -> None:
         self.deployment_name = deployment_name
         self.pod_name = pod_name
+        self.pod_config = pod_config
         self.deployment_config = deployment_config
-        cs = deployment_config["spec"]["template"]["spec"]["containers"]
+
+        cs = pod_config["spec"]["containers"]
+
         containers = [c for c in cs if "/telepresence-" in c["image"]]
         if not containers:
             raise RuntimeError(
@@ -183,6 +187,7 @@ def get_remote_info(
                 deployment_name,
                 name,
                 deployment,
+                pod,
             )
 
             # Ensure remote container is running same version as we are:
