@@ -311,7 +311,7 @@ def supplant_pod(
     )
 
     runner.show(
-        f"Swapped pod {new_deployment_json}."
+        f"Swapped pod {json.dumps(new_deployment_json, indent=2)}."
     )
     # Launch the new deployment
     runner.check_call(
