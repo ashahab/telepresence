@@ -315,7 +315,7 @@ def supplant_pod(
     )
     # Launch the new deployment
     runner.check_call(
-        runner.kubectl("apply", "-f", "-"),
+        runner.kubectl("replace", "-f", "-"),
         input=json.dumps(new_deployment_json).encode("utf-8")
     )
 
