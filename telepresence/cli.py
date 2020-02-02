@@ -288,6 +288,14 @@ def parse_args(in_args: Optional[List[str]] = None) -> argparse.Namespace:
         )
     )
     parser.add_argument(
+        "--kill-pod",
+        default=None,
+        metavar="PODNAME",
+        help=(
+            "optional pod to kill."
+        )
+    )
+    parser.add_argument(
         "--serviceaccount",
         dest="service_account",
         default=None,

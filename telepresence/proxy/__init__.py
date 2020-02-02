@@ -140,6 +140,12 @@ def setup(runner: Runner, args):
             runner_, deployment_arg, args.expose, custom_nameserver, deployment_type,
             args.service_account
         )
+        if args.kill_pod is not None:
+            runner_.check_call(
+                runner_.kubectl(
+                    "kill", "pod", args.kill_pod
+                )
+            )
         type, subtype = _split_type_subtype(deployment_type)
         remote_info = get_remote_info(
             runner,
