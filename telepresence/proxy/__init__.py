@@ -143,7 +143,7 @@ def setup(runner: Runner, args):
         if args.kill_pod is not None:
             runner_.check_call(
                 runner_.kubectl(
-                    "kill", "pod", args.kill_pod
+                    "delete", "pod", args.kill_pod
                 )
             )
         type, subtype = _split_type_subtype(deployment_type)
