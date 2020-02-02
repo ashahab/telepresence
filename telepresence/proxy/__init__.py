@@ -133,6 +133,7 @@ def setup(runner: Runner, args):
                         args.service_account, exc.stderr
                     )
                 )
+        import pdb; pdb.set_trace()
         tel_deployment, run_id = operation(
             runner_, deployment_arg, args.expose, custom_nameserver,
             args.service_account
